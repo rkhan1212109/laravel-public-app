@@ -51,6 +51,8 @@ jobs:
         server: ftp.mkhalid.org
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps  # Try 'ftp' if this fails
+        port: 21        # Try 990 if using 'ftps', or 22 for 'sftp'
         local-dir: ./
         server-dir: /public_html/
         exclude: |
