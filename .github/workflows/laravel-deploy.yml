@@ -1,4 +1,4 @@
-name: Deploy Laravel
+name: Deploy Laravel to Namecheap
 
 on:
   push:
@@ -16,15 +16,18 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.2'
+        extensions: mbstring, fileinfo, openssl, pdo, tokenizer, xml, curl, pdo_mysql
         tools: composer
 
     - name: Create .env file
       run: |
-        echo "APP_NAME=Laravel" > .env
+        echo "APP_NAME=Laravel App" > .env
         echo "APP_ENV=production" >> .env
         echo "APP_KEY=${{ secrets.LARAVEL_APP_KEY }}" >> .env
         echo "APP_DEBUG=false" >> .env
         echo "APP_URL=https://laravel-public-app.mkhalid.org" >> .env
+        echo "LOG_CHANNEL=stack" >> .env
+        echo "" >> .env
         echo "DB_CONNECTION=mysql" >> .env
         echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
         echo "DB_PORT=3306" >> .env
@@ -32,8 +35,15 @@ jobs:
         echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> .env
         echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
 
-    - name: Install dependencies
-      run: composer install --no-dev --optimize-autoloader
+    - name: Install Composer dependencies
+      run: |
+        composer install --no-dev --optimize-autoloader --no-interaction
+        php artisan optimize:clear
+
+    - name: Prepare storage directories
+      run: |
+        mkdir -p storage/framework/{cache,sessions,views}
+        chmod -R 775 storage bootstrap/cache
 
     - name: Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -42,4 +52,20 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
-        server-dir: /
+        server-dir: /public_html/
+        exclude: |
+          .git*
+          .github/
+          .env.example
+          .gitattributes
+          .gitignore
+          composer.json
+          composer.lock
+          package.json
+          package-lock.json
+          README.md
+          tests/
+          node_modules/
+          storage/
+          *.md
+          *.log
