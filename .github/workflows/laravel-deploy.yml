@@ -54,7 +54,7 @@ jobs:
         protocol: ftps  # Try 'ftp' if this fails
         port: 21        # Try 990 if using 'ftps', or 22 for 'sftp'
         local-dir: ./
-        server-dir: /public_html/
+        server-dir: /laravel-public-app.mkhalid.org/
         exclude: |
           .git*
           .github/
