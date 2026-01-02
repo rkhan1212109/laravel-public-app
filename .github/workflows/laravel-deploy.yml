@@ -35,16 +35,18 @@ jobs:
     - name: Install dependencies
       run: composer install --no-dev --optimize-autoloader --no-interaction
 
-    - name: Delete unnecessary files before upload
+    - name: Clean up before upload
       run: |
+        # Remove unnecessary folders
         rm -rf .git
         rm -rf .github
         rm -rf node_modules
         rm -rf tests
-        rm -rf storage/logs/*
-        rm -rf storage/framework/cache/*
-        rm -rf storage/framework/sessions/*
-        rm -rf storage/framework/views/*
+        # Clean storage cache
+        find storage -type f -name "*.log" -delete
+        find storage/framework/cache -type f -delete
+        find storage/framework/sessions -type f -delete
+        find storage/framework/views -type f -delete
 
     - name: Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
@@ -54,6 +56,7 @@ jobs:
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
         server-dir: /laravel-public-app.mkhalid.org/
+        timeout: 300000  # 5 minutes timeout
         exclude: |
           **/.git*
           **/.github*
@@ -71,7 +74,5 @@ jobs:
           phpunit.xml
           webpack.mix.js
           yarn.lock
-        # ADD THESE SETTINGS:
-        timeout: 180000  # Increase timeout to 3 minutes
-        ftp-keepalive: 10000  # Send keep-alive every 10 seconds
-        # server-dir: /public_html/
+          storage/*.key
+          *.log
